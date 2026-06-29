@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AET Policies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0b0b0f;
+      --surface:   #13131b;
+      --surface2:  #1b1b26;
+      --border:    #252533;
+      --accent:    #c8a86b;
+      --accent-bg: rgba(200, 168, 107, 0.10);
+      --text:      #e6e2d9;
+      --muted:     #8f8e9d;
+      --blue:      #5b9cf6;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      padding: 48px 28px 100px;
+    }
+
+    .page-header {
+      max-width: 920px;
+      margin: 0 auto 52px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 30px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-bottom: 24px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 180px;
+      max-width: 280px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: var(--muted);
+      stroke-width: 2;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      padding: 6px 10px 6px 30px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-input::placeholder { color: var(--muted); }
+    .search-input:focus { border-color: var(--accent); }
+
+    .filter-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 6px 28px 6px 10px;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238f8e9d' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .filter-select:focus,
+    .filter-select.active { border-color: var(--accent); color: var(--accent); }
+
+    .filter-select option {
+      background: var(--surface2);
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    .view-toggle { display: flex; gap: 4px; margin-left: 4px; }
+
+    .view-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 5px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .view-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .view-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .view-btn:hover:not(.active) { border-color: var(--muted); color: var(--text); }
+
+    .result-count {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .content { max-width: 920px; margin: 0 auto; }
+
+    /* ── Card grid ── */
+    .policy-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) { .policy-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 420px) {
+      .policy-grid { grid-template-columns: 1fr; }
+      body { padding: 32px 16px 80px; }
+    }
+
+    .policy-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 14px 15px 15px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .policy-card:hover { border-color: var(--accent); background: var(--surface2); }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .tag {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 2px 6px;
+      white-space: nowrap;
+    }
+
+    .policy-card:hover .tag { border-color: rgba(200, 168, 107, 0.25); }
+
+    /* ── List view ── */
+    .policy-list { display: none; flex-direction: column; gap: 2px; }
+
+    .policy-list-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 11px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .policy-list-item:hover { border-color: var(--accent); background: var(--surface2); }
+
+    .list-title { font-size: 13px; font-weight: 500; color: var(--text); flex: 1; }
+
+    .list-tags { display: flex; gap: 5px; flex-shrink: 0; }
+
+    .list-arrow { color: var(--muted); font-size: 12px; flex-shrink: 0; transition: color 0.15s; }
+    .policy-list-item:hover .list-arrow { color: var(--accent); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 72px 0;
+      color: var(--muted);
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 11, 15, 0.88);
+      z-index: 100;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 24px 60px;
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+      margin: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .modal-header-left { display: flex; flex-direction: column; gap: 8px; }
+    .modal-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      padding: 4px 8px;
+      flex-shrink: 0;
+      transition: border-color 0.12s, color 0.12s;
+    }
+
+    .modal-close:hover { border-color: var(--muted); color: var(--text); }
+
+    .modal-body {
+      padding: 22px 22px 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-body p { font-size: 13px; color: var(--text); line-height: 1.65; }
+
+    .modal-body .policy-section { display: flex; flex-direction: column; gap: 8px; }
+
+    .modal-body .section-heading {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .modal-body ul { display: flex; flex-direction: column; gap: 6px; padding-left: 0; list-style: none; }
+
+    .modal-body ul li {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .modal-body ul li::before { content: "–"; position: absolute; left: 0; color: var(--accent); }
+
+    .modal-body a { color: var(--blue); text-decoration: none; }
+    .modal-body a:hover { text-decoration: underline; }
+    .modal-divider { height: 1px; background: var(--border); }
+  </style>
+</head>
+<body>
+
+  <header class="page-header">
+    <div class="wordmark">Belmont University &middot; AET</div>
+    <h1>AET Policies</h1>
+    <div class="meta">Studio and program policies for AET students and faculty</div>
+
+    <div class="controls">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/></svg>
+        <input class="search-input" id="searchInput" type="text" placeholder="Search policies...">
+      </div>
+
+      <select class="filter-select" id="typeFilter">
+        <option value="">All Types</option>
+        <option value="General">General</option>
+        <option value="Perk">Perk</option>
+        <option value="Class">Class</option>
+      </select>
+
+      <div class="view-toggle">
+        <button class="view-btn active" id="btnGrid" title="Grid view">
+          <svg viewBox="0 0 14 14"><rect x="0" y="0" width="6" height="6" rx="1"/><rect x="8" y="0" width="6" height="6" rx="1"/><rect x="0" y="8" width="6" height="6" rx="1"/><rect x="8" y="8" width="6" height="6" rx="1"/></svg>
+        </button>
+        <button class="view-btn" id="btnList" title="List view">
+          <svg viewBox="0 0 14 14"><rect x="0" y="1" width="14" height="2" rx="1"/><rect x="0" y="6" width="14" height="2" rx="1"/><rect x="0" y="11" width="14" height="2" rx="1"/></svg>
+        </button>
+      </div>
+
+      <span class="result-count" id="resultCount"></span>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="policy-grid" id="policyGrid"></div>
+    <div class="policy-list" id="policyList"></div>
+    <div class="empty-state" id="emptyState">No policies match your search.</div>
+  </main>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-tags" id="modalTags"></div>
+          <div class="modal-title" id="modalTitle"></div>
+        </div>
+        <button class="modal-close" id="modalClose">&#x2715;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    var policies = [
+      {
+        title: "Session Cancellation Policy and Contact Info",
+        types: ["General"],
+        content: [
+          { type: "p", text: "To maintain fairness and maximize studio availability, students are expected to honor all booked practice, perk, or academic sessions." },
+          {
+            type: "section",
+            heading: "Cancellations",
+            items: [
+              "Cancel the booking in Belmont-Studios.org and/or Studio Assistant.",
+              "For same-day cancellations, notify studio staff as soon as possible at the appropriate number below:",
+              "REM Studios: 615-460-6030",
+              "34MSE Studios: 615-460-6344",
+              "Oceanway &amp; Lighthouse Studios: 615-320-3900"
+            ]
+          },
+          {
+            type: "section",
+            heading: "No-Show Policy",
+            items: [
+              "A no-show is defined as failing to arrive for a booked session without prior cancellation.",
+              "Students who are no-shows may face one or more of the following: temporary suspension of studio access, reduced priority for future bookings, or escalation to program administration for repeated offenses."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Why This Matters",
+            items: [
+              "Every missed session prevents another student from using valuable studio time. Please respect the time and effort of our Studio Staff Engineers. Professional courtesy and accountability are expected in order to maintain access to CEMB studio facilities."
+            ]
+          }
+        ]
+      },
+      {
+        title: "Attendance and Course Engagement",
+        types: ["General", "Class"],
+        content: [
+          { type: "p", text: "Belmont University is committed to the idea that regular class attendance is essential to successful scholastic achievement. Absence is permitted only in cases of illness or other legitimate cause. Attendance is checked from the first class meeting." },
+          {
+            type: "section",
+            heading: "Provost's Excused Absences",
+            items: [
+              "If a class absence is necessary because of an activity by another class or university organization, the sponsor must provide a memorandum to the Provost at least two (2) weeks prior to the event.",
+              "The memo must include the names of students involved, the type of event, and the date range.",
+              "If approved, the Provost countersigns the memo and copies are provided to each student to present to the instructor."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Failure for Non-Attendance",
+            items: [
+              "Should absences exceed 20% of class meeting time, the faculty member may assign the grade \"FN\" (failure for nonattendance)."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Student Responsibilities",
+            items: [
+              "Notify faculty members if you miss class.",
+              "Provide documentation in support of absenteeism for the faculty member to review.",
+              "Students with excused absences are able to make up all classwork missed during the absenteeism period."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Faculty Responsibilities",
+            items: [
+              "Provide an absenteeism policy on each course syllabus and review it with students.",
+              "Review requests for excused absences not covered by the Provost's Excuse.",
+              "Honor properly documented absences and provide opportunities for students to make up missed coursework."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Appeal",
+            items: [
+              "Students may appeal a disputed absence matter to the chair of the faculty member's department or to the appropriate dean's office.",
+              "Proper documentation must be provided in support of the appeal.",
+              "The appropriate dean's decision will be final."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Academic Honor System",
+            items: [
+              "Belmont University's Academic Honor System aims to cultivate a community based on trust, academic honesty, and social responsibility.",
+              "<a href=\"http://www.belmont.edu/studentaffairs/student_conduct_academic_integrity/bruinguide/\" target=\"_blank\">View the Honor Code (Bruin Guide)</a>"
+            ]
+          }
+        ]
+      },
+      {
+        title: "Non-Commercial Use and Compensation",
+        types: ["Perk", "General"],
+        content: [
+          {
+            type: "section",
+            heading: "No Charging for Access or Services",
+            items: [
+              "Perk sessions are an academic benefit and may not be used to generate income.",
+              "Students may not charge fees, solicit payment, accept compensation, or otherwise monetize studio access, engineering services, or production services performed during the booked session.",
+              "No money or exchange of value may change hands in connection with the use of CEMB studio facilities under a Perk session booking."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Use of Recorded Materials — Perk Sessions",
+            items: [
+              "Once a Perk session is complete, Belmont University does not restrict how artists use the recordings, provided no studio access or services were monetized.",
+              "Artists are free to release, distribute, or promote recordings created during Perk sessions."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Use of Recorded Materials — Academic Sessions",
+            items: [
+              "Recordings created as part of a scheduled class, course assignment, or academic project are considered educational materials.",
+              "Belmont University retains the right to use, reproduce, and share these materials for educational, instructional, accreditation, promotional, or archival purposes.",
+              "This may include use in future classes, demonstrations, recruitment materials, or internal presentations. Use will remain educational in nature and will not be commercialized by the University."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Professional Responsibility",
+            items: [
+              "Students are expected to operate at a professional standard and clearly communicate to collaborators that recording sessions in CEMB studio facilities are non-commercial studio bookings provided for educational purposes."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Violation of Policy",
+            items: [
+              "Any student found monetizing studio access or services under a Perk session booking may have studio privileges suspended and may be referred to the AET Department for further review."
+            ]
+          }
+        ]
+      },
+      {
+        title: "Visitor and Musician Policy",
+        types: ["General"],
+        content: [
+          { type: "p", text: "Musicians and visitors not affiliated with Belmont University may participate in student-led sessions in CEMB studios. To ensure safety, accountability, and professionalism, the following rules apply." },
+          {
+            type: "section",
+            heading: "Responsibility",
+            items: [
+              "The student who booked the session is fully responsible for the conduct of all visitors and musicians present.",
+              "Visitors must follow all studio rules and guidelines expected of Belmont students."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Check-In Procedure",
+            items: [
+              "All visitors must check in with studio staff upon arrival.",
+              "A valid photo I.D. is required to verify identity.",
+              "Visitors must provide their first and last name and one form of contact (phone number or email) before being permitted into the studios."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Expectations",
+            items: [
+              "Visitors must respect studio property, staff engineers, and all safety procedures.",
+              "Failure to follow policies may result in removal from the facility and/or restriction of the booking student's studio access."
+            ]
+          },
+          { type: "p", text: "<strong>Reminder:</strong> Students are expected to communicate these rules to their guests prior to the session." }
+        ]
+      },
+      {
+        title: "Supervision and Equipment Use",
+        types: ["General"],
+        content: [
+          {
+            type: "section",
+            heading: "Access",
+            items: [
+              "Studio access is permitted only during designated hours when the Studio Manager, Facility Manager, Faculty, or Staff Engineer supervisor is present."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Supervision",
+            items: [
+              "The Studio Manager may require sessions to be supervised by Staff Engineers or Faculty to ensure compliance with equipment and studio policies."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Equipment Handling",
+            items: [
+              "All equipment must be checked in/out by the Staff Engineer on duty.",
+              "Students and their guests are responsible for operating equipment correctly and must adhere to all safety and usage guidelines.",
+              "Damages caused by improper use may result in fees and/or suspension of privileges."
+            ]
+          }
+        ]
+      },
+      {
+        title: "Graduate Student Perk Session Approval Policy",
+        types: ["Perk"],
+        content: [
+          {
+            type: "section",
+            heading: "Purpose",
+            items: [
+              "Belmont studios vary in layout, equipment, and workflow. This policy helps ensure sessions run smoothly, protect the studio environment, and set both engineers and artists up for success.",
+              "Graduate students must receive approval prior to independently engineering a perk session."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Instructor Approval",
+            items: [
+              "Graduate students are expected to obtain a simple approval from an AET instructor confirming they are prepared to run a session independently.",
+              "This approval does not need to be formal; a quick confirmation, even verbal, is sufficient."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Alternative Approval",
+            items: [
+              "If an instructor is unable to provide approval, the student must schedule time with the Studio Manager prior to the session to review studio setup, signal flow, and session expectations."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Staff Support",
+            items: [
+              "Student Staff Engineers are available to assist with troubleshooting, but are not dedicated assistant engineers and may be supporting multiple sessions at once.",
+              "Students should be prepared to operate independently."
+            ]
+          }
+        ]
+      },
+      {
+        title: "Perk Session Eligibility",
+        types: ["Perk"],
+        content: [
+          { type: "p", text: "Perk sessions are a privilege extended to students in good standing. They provide bonus studio time beyond standard academic and practice allocations." },
+          {
+            type: "section",
+            heading: "Eligibility Requirements",
+            items: [
+              "Student must have no active booking suspensions or penalties.",
+              "Student must have completed at least one prior semester of AET coursework.",
+              "No outstanding no-show strikes within the current semester."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Approval",
+            items: [
+              "Perk sessions require Studio Manager approval before the booking is confirmed.",
+              "Requests are reviewed within one business day."
+            ]
+          }
+        ]
+      },
+      {
+        title: "Health, Safety, and Conduct Standards",
+        types: ["General", "Perk"],
+        content: [
+          {
+            type: "section",
+            heading: "Adherence to Safety Guidelines",
+            items: [
+              "Students and their guests must adhere to all health and safety protocols relevant to the studio, including equipment, hygiene, and maximum occupancy limits."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Professional Conduct",
+            items: [
+              "All students must adhere to campus codes of conduct, studio guidelines, and maintain an atmosphere of respect and professionalism during perk sessions.",
+              "Any disruptive behavior, unsafe practices, or conduct violations will result in immediate suspension of perk session privileges."
+            ]
+          },
+          {
+            type: "section",
+            heading: "Academic Integrity",
+            items: [
+              "Any attempt to use perk sessions for unauthorized or commercial purposes will result in disciplinary action, including but not limited to suspension of studio access privileges.",
+              "Any behavior that violates campus codes of conduct or disrupts other students' learning will result in immediate suspension of studio privileges."
+            ]
+          }
+        ]
+      }
+    ];
+
+    var activeSearch = "";
+    var activeType = "";
+    var currentView = "grid";
+
+    function matchesFilters(p) {
+      if (activeType && p.types.indexOf(activeType) === -1) { return false; }
+      if (activeSearch) {
+        var q = activeSearch.toLowerCase();
+        var inTitle = p.title.toLowerCase().indexOf(q) !== -1;
+        var inContent = JSON.stringify(p.content).toLowerCase().indexOf(q) !== -1;
+        if (!inTitle && !inContent) { return false; }
+      }
+      return true;
+    }
+
+    var grid = document.getElementById("policyGrid");
+    var list = document.getElementById("policyList");
+    var emptyState = document.getElementById("emptyState");
+    var resultCount = document.getElementById("resultCount");
+
+    function buildTagsHtml(types) {
+      var html = "";
+      for (var i = 0; i < types.length; i++) {
+        html += '<span class="tag">' + types[i] + '</span>';
+      }
+      return html;
+    }
+
+    function render() {
+      grid.innerHTML = "";
+      list.innerHTML = "";
+
+      var filtered = [];
+      for (var i = 0; i < policies.length; i++) {
+        if (matchesFilters(policies[i])) { filtered.push(policies[i]); }
+      }
+
+      resultCount.textContent = filtered.length + " polic" + (filtered.length !== 1 ? "ies" : "y");
+
+      if (filtered.length === 0) {
+        emptyState.style.display = "block";
+        return;
+      }
+      emptyState.style.display = "none";
+
+      for (var i = 0; i < filtered.length; i++) {
+        var p = filtered[i];
+
+        var card = document.createElement("div");
+        card.className = "policy-card";
+        card.innerHTML =
+          '<div class="card-title">' + p.title + '</div>' +
+          '<div class="card-tags">' + buildTagsHtml(p.types) + '</div>';
+        card.addEventListener("click", function(pol) {
+          return function() { openModal(pol); };
+        }(p));
+        grid.appendChild(card);
+
+        var item = document.createElement("div");
+        item.className = "policy-list-item";
+        item.innerHTML =
+          '<span class="list-title">' + p.title + '</span>' +
+          '<div class="list-tags">' + buildTagsHtml(p.types) + '</div>' +
+          '<span class="list-arrow">&#8250;</span>';
+        item.addEventListener("click", function(pol) {
+          return function() { openModal(pol); };
+        }(p));
+        list.appendChild(item);
+      }
+    }
+
+    var overlay = document.getElementById("modalOverlay");
+    var modalTagsEl = document.getElementById("modalTags");
+    var modalTitleEl = document.getElementById("modalTitle");
+    var modalBodyEl = document.getElementById("modalBody");
+    var closeBtn = document.getElementById("modalClose");
+
+    function buildModalBody(content) {
+      var html = "";
+      for (var i = 0; i < content.length; i++) {
+        var block = content[i];
+        if (block.type === "p") {
+          html += '<p>' + block.text + '</p>';
+        } else if (block.type === "section") {
+          html += '<div class="policy-section">';
+          html += '<div class="section-heading">' + block.heading + '</div>';
+          html += '<ul>';
+          for (var j = 0; j < block.items.length; j++) {
+            html += '<li>' + block.items[j] + '</li>';
+          }
+          html += '</ul></div>';
+        } else if (block.type === "divider") {
+          html += '<div class="modal-divider"></div>';
+        }
+      }
+      return html;
+    }
+
+    function openModal(p) {
+      modalTagsEl.innerHTML = buildTagsHtml(p.types);
+      modalTitleEl.textContent = p.title;
+      modalBodyEl.innerHTML = buildModalBody(p.content);
+      overlay.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      overlay.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    closeBtn.addEventListener("click", closeModal);
+    overlay.addEventListener("click", function(e) { if (e.target === overlay) { closeModal(); } });
+    document.addEventListener("keydown", function(e) { if (e.key === "Escape") { closeModal(); } });
+
+    var btnGrid = document.getElementById("btnGrid");
+    var btnList = document.getElementById("btnList");
+
+    btnGrid.addEventListener("click", function() {
+      currentView = "grid";
+      grid.style.display = "grid";
+      list.style.display = "none";
+      btnGrid.classList.add("active");
+      btnList.classList.remove("active");
+    });
+
+    btnList.addEventListener("click", function() {
+      currentView = "list";
+      grid.style.display = "none";
+      list.style.display = "flex";
+      btnGrid.classList.remove("active");
+      btnList.classList.add("active");
+    });
+
+    document.getElementById("searchInput").addEventListener("input", function() {
+      activeSearch = this.value.trim();
+      render();
+    });
+
+    document.getElementById("typeFilter").addEventListener("change", function() {
+      activeType = this.value;
+      this.className = "filter-select" + (this.value ? " active" : "");
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
